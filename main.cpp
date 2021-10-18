@@ -48,6 +48,9 @@ int zapisanie(vector<Adresat> &adresaci, int &rekord)
     osoba.telefon=telefon;
     adresaci.push_back(osoba);
 
+    cout<<"Adresat zapisany."<<endl;
+    system("pause");
+
     return rekord;
 }
 
@@ -84,7 +87,6 @@ void wyszukaniePoImieniu(vector<Adresat> adresaci)
     if (ileImion==0)
     {
         cout<<"Nie ma w ksiazce osoby o podanym imieniu."<<endl;
-        Sleep(2000);
     }
     system("pause");
 }
@@ -122,7 +124,6 @@ void wyszukaniePoNazwisku(vector<Adresat> adresaci)
     if (ileNazwisk==0)
     {
         cout<<"Nie ma w ksiazce osoby o podanym nazwisku."<<endl;
-        Sleep(2000);
     }
     system("pause");
 }
@@ -152,7 +153,7 @@ int wyszukaniePoID(vector<Adresat> adresaci)
 
     system("cls");
     cout<<"KSIAZKA ADRESOWA"<<endl;
-    cout<<"0 - powrot do menu glowengo"<<endl;
+    cout<<"0 - powrot do menu glownego"<<endl;
     cout<<"Podaj numer ID szukanego adresata."<<endl;
     cout<<"Numer ID:";
     cin>>edytowaneID;
@@ -179,7 +180,7 @@ int wyszukaniePoID(vector<Adresat> adresaci)
             i++;
         }
     }
-    cout<<"Nie ma w adresata o takim ID."<<endl;
+    cout<<"Nie ma w ksiazce adresata o takim ID."<<endl;
     system("pause");
     return 0;
 }
@@ -252,14 +253,14 @@ void edycjaAdresata(vector<Adresat> &adresaci, int ID_znalezionegoAdresata)
     cout<<"3 - adres"<<endl;
     cout<<"4 - email"<<endl;
     cout<<"5 - numer telefonu"<<endl;
-    cout<<"0 - powrot do menu glowengo"<<endl;
+    cout<<"0 - powrot do menu glownego"<<endl;
     while(true)
     {
         cout<<"Twoj wybor:";
         cin>>wybor;
         if (wybor=='1')
         {
-            cout<<"Podaj nowe imie:";
+            cout<<"Podaj nowe imie osoby:";
             cin.clear();
             cin.sync();
             getline(cin, imie);
@@ -318,14 +319,18 @@ int odczytPliku(vector<Adresat> &adresaci,  int &rekord)
     plik.open("ksiazka_adresowa_z_danymi.txt", ios::in);
     if(plik.good())
     {
-        do
+        while(getline(plik,linia))
         {
-            getline(plik,linia);
             istringstream input;
             input.str(linia);
             for(slowoTemp; getline(input, slowoTemp,'|');)
                 temp.push_back(slowoTemp);
-        }while(linia != "");
+        }
+    }
+    else
+    {
+        cout<<"Nie mozna pobrac danych z pliku z adresami."<<endl;
+        system("pause");
     }
     plik.close();
 
@@ -355,10 +360,20 @@ void zapisPliku(vector<Adresat> &adresaci)
         int i=0;
         while(i<adresaci.size())
         {
-            plik<<adresaci[i].ID<<'|'<<adresaci[i].imie<<'|'<<adresaci[i].nazwisko<<'|'<<adresaci[i].adres<<'|'<<adresaci[i].email<<'|'<<adresaci[i].telefon<<'|'<<endl;
+            plik<<adresaci[i].ID<<'|';
+            plik<<adresaci[i].imie<<'|';
+            plik<<adresaci[i].nazwisko<<'|';
+            plik<<adresaci[i].adres<<'|';
+            plik<<adresaci[i].email<<'|';
+            plik<<adresaci[i].telefon<<'|'<<endl;
             i++;
         }
         plik.close();
+    }
+    else
+    {
+        cout<<"Nie mozna zapisac danych do pliku z adresami."<<endl;
+        system("pause");
     }
 }
 
