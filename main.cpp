@@ -4,16 +4,103 @@
 #include <fstream>
 #include <sstream>
 
-
 using namespace std;
+
+struct Uzytkownik
+{
+    int idUzytkownika;
+    string nazwa, haslo;
+};
 
 struct Adresat
 {
-    int ID;
+    int idAdresata, idUzytkownika;
     string imie, nazwisko, adres, email, telefon;
 };
 
-int zapisanie(vector<Adresat> &adresaci, int &rekord)
+int rejestracja(vector<Uzytkownik> &uzytkownicy, int iloscUzytkownikow)
+{
+    string nazwa, haslo;
+    Uzytkownik osoba;
+    int i=0;
+
+    cout<<"Podaj nazwe uzytkownika:"<<endl;
+    cin>>nazwa;
+
+    while (i<iloscUzytkownikow)
+    {
+        if (uzytkownicy[i].nazwa==nazwa)
+        {
+            cout<<"Taka nazwa uzytkownika juz istnieje. Wpisz inna nazwe."<<endl;
+            cin>>nazwa;
+            i=0;
+        }
+        else
+        {
+            i++;
+        }
+    }
+    cout<<"Podaj haslo uzytkownika:"<<endl;
+    cin>>haslo;
+    iloscUzytkownikow+=1;
+    osoba.idUzytkownika=iloscUzytkownikow;
+    osoba.nazwa=nazwa;
+    osoba.haslo=haslo;
+    uzytkownicy.push_back(osoba);
+    cout<<"Konto zalozone."<<endl;
+    system("pause");
+    return iloscUzytkownikow;
+}
+
+int logowanie(vector<Uzytkownik> uzytkownicy)
+{
+    string nazwa, haslo;
+    cout<<"Podaj nazwe:"<<endl;
+    cin>>nazwa;
+    int i=0;
+    while (i<uzytkownicy.size())
+    {
+        if (uzytkownicy[i].nazwa==nazwa)
+        {
+            for (int proby=0; proby<3; proby++)
+            {
+                cout<<"Podaj haslo. Pozostalo "<<3-proby<<" proby."<<endl;
+                cin>>haslo;
+                if (uzytkownicy[i].haslo==haslo)
+                {
+                    cout<<"Zalogowales sie.";
+                    Sleep(1000);
+                    return uzytkownicy[i].idUzytkownika;
+                }
+            }
+            cout<<"Podales bledne haslo 3 razy. Poczekaj trzy sekundy."<<endl;
+            Sleep(3000);
+            return 0;
+        }
+        i++;
+    }
+    cout<<"Nie ma uzytkownika o takiej nazwie."<<endl;
+    Sleep(1000);
+    return 0;
+}
+
+void zmianaHasla(vector<Uzytkownik> &uzytkownicy, int idZalogowanegoUzytkownika)
+{
+    string haslo;
+    cout<<"Podaj nowe haslo:"<<endl;
+    cin>>haslo;
+    for (int i=0; i<uzytkownicy.size(); i++)
+    {
+        if (uzytkownicy[i].idUzytkownika==idZalogowanegoUzytkownika)
+        {
+            uzytkownicy[i].haslo=haslo;
+            cout<<"Haslo zostalo zminione.";
+            Sleep(1000);
+        }
+    }
+}
+
+int zapisanieAdresata(vector<Adresat> &adresaci, int &rekord,  int idZalogowanegoUzytkownika)
 {
     string imie, nazwisko, adres, email, telefon;
     Adresat osoba;
@@ -40,7 +127,8 @@ int zapisanie(vector<Adresat> &adresaci, int &rekord)
     getline(cin, telefon);
 
     rekord+=1;
-    osoba.ID=rekord;
+    osoba.idAdresata=rekord;
+    osoba.idUzytkownika=idZalogowanegoUzytkownika;
     osoba.imie=imie;
     osoba.nazwisko=nazwisko;
     osoba.adres=adres;
@@ -54,7 +142,7 @@ int zapisanie(vector<Adresat> &adresaci, int &rekord)
     return rekord;
 }
 
-void wyszukaniePoImieniu(vector<Adresat> adresaci)
+void wyszukanieAdresataPoImieniu(vector<Adresat> adresaci, int idZalogowanegoUzytkownika)
 {
     string imie;
     int i=0;
@@ -67,9 +155,10 @@ void wyszukaniePoImieniu(vector<Adresat> adresaci)
 
     while(i<adresaci.size())
     {
-        if (adresaci[i].imie==imie)
+        if (adresaci[i].imie==imie && adresaci[i].idUzytkownika==idZalogowanegoUzytkownika)
         {
-            cout<<"ID: "<<adresaci[i].ID<<endl;
+            cout<<"id Adresata: "<<adresaci[i].idAdresata<<endl;
+            cout<<"id Uzytkownika: "<<adresaci[i].idUzytkownika<<endl;
             cout<<"Imie: "<<adresaci[i].imie<<endl;
             cout<<"Nazwisko: "<<adresaci[i].nazwisko<<endl;
             cout<<"Adres: "<<adresaci[i].adres<<endl;
@@ -91,7 +180,7 @@ void wyszukaniePoImieniu(vector<Adresat> adresaci)
     system("pause");
 }
 
-void wyszukaniePoNazwisku(vector<Adresat> adresaci)
+void wyszukanieAdresataPoNazwisku(vector<Adresat> adresaci, int idZalogowanegoUzytkownika)
 {
     string nazwisko;
     int i=0;
@@ -104,9 +193,10 @@ void wyszukaniePoNazwisku(vector<Adresat> adresaci)
 
     while(i<adresaci.size())
     {
-        if (adresaci[i].nazwisko==nazwisko)
+        if (adresaci[i].nazwisko==nazwisko && adresaci[i].idUzytkownika==idZalogowanegoUzytkownika)
         {
-            cout<<"ID: "<<adresaci[i].ID<<endl;
+            cout<<"id Adresata: "<<adresaci[i].idAdresata<<endl;
+            cout<<"id Uzytkownika: "<<adresaci[i].idUzytkownika<<endl;
             cout<<"Imie: "<<adresaci[i].imie<<endl;
             cout<<"Nazwisko: "<<adresaci[i].nazwisko<<endl;
             cout<<"Adres: "<<adresaci[i].adres<<endl;
@@ -128,43 +218,50 @@ void wyszukaniePoNazwisku(vector<Adresat> adresaci)
     system("pause");
 }
 
-
-void wyswietlenieWszystkichAdresatow(vector<Adresat> adresaci)
+void wyswietlenieWszystkichAdresatow(vector<Adresat> adresaci, int idZalogowanegoUzytkownika)
 {
     int i=0;
     while(i<adresaci.size())
     {
-        cout<<"ID: "<<adresaci[i].ID<<endl;
-        cout<<"Imie: "<<adresaci[i].imie<<endl;
-        cout<<"Nazwisko: "<<adresaci[i].nazwisko<<endl;
-        cout<<"Adres: "<<adresaci[i].adres<<endl;
-        cout<<"Email: "<<adresaci[i].email<<endl;
-        cout<<"Telefon: "<<adresaci[i].telefon<<endl;
-        cout<<"---"<<endl;
-        i++;
+        if (adresaci[i].idUzytkownika==idZalogowanegoUzytkownika)
+        {
+            cout<<"id Adresata: "<<adresaci[i].idAdresata<<endl;
+            cout<<"id Uzytkownika: "<<adresaci[i].idUzytkownika<<endl;
+            cout<<"Imie: "<<adresaci[i].imie<<endl;
+            cout<<"Nazwisko: "<<adresaci[i].nazwisko<<endl;
+            cout<<"Adres: "<<adresaci[i].adres<<endl;
+            cout<<"Email: "<<adresaci[i].email<<endl;
+            cout<<"Telefon: "<<adresaci[i].telefon<<endl;
+            cout<<"---"<<endl;
+            i++;
+        }
+        else
+        {
+            i++;
+        }
     }
     system("pause");
 }
 
-int wyszukaniePoID(vector<Adresat> adresaci)
+int wyszukanieAdresataPo_idAdresata(vector<Adresat> adresaci, int idZalogowanegoUzytkownika)
 {
-    int edytowaneID;
+    int wprowadzone_idAdresata;
     int i=0;
 
     system("cls");
     cout<<"KSIAZKA ADRESOWA"<<endl;
     cout<<"0 - powrot do menu glownego"<<endl;
-    cout<<"Podaj numer ID szukanego adresata."<<endl;
-    cout<<"Numer ID:";
-    cin>>edytowaneID;
+    cout<<"Podaj identyfikator szukanego adresata."<<endl;
+    cout<<"Identyfikator numer:";
+    cin>>wprowadzone_idAdresata;
 
-    if (edytowaneID==0)
+    if (wprowadzone_idAdresata==0)
     {
         return 0;
     }
     while(i<adresaci.size())
     {
-        if (adresaci[i].ID==edytowaneID)
+        if (adresaci[i].idAdresata==wprowadzone_idAdresata && adresaci[i].idUzytkownika==idZalogowanegoUzytkownika)
         {
             cout<<"---"<<endl;
             cout<<"Adresat:"<<endl;
@@ -173,19 +270,19 @@ int wyszukaniePoID(vector<Adresat> adresaci)
             cout<<"Adres: "<<adresaci[i].adres<<endl;
             cout<<"Email: "<<adresaci[i].email<<endl;
             cout<<"Telefon: "<<adresaci[i].telefon<<endl;
-            return edytowaneID;
+            return wprowadzone_idAdresata;
         }
         else
         {
             i++;
         }
     }
-    cout<<"Nie ma w ksiazce adresata o takim ID."<<endl;
+    cout<<"Nie ma w Ksiazce adresata o takim identyfikatorze."<<endl;
     system("pause");
     return 0;
 }
 
-int usuniecieAdresata(vector<Adresat> &adresaci, int ID_znalezionegoAdresata)
+int usuniecieAdresata(vector<Adresat> &adresaci, int znalezione_idAdresata)
 {
     int i=0;
     int j=0;
@@ -193,7 +290,7 @@ int usuniecieAdresata(vector<Adresat> &adresaci, int ID_znalezionegoAdresata)
 
     while(i<adresaci.size())
     {
-        if (adresaci[i].ID==ID_znalezionegoAdresata)
+        if (adresaci[i].idAdresata==znalezione_idAdresata)
         {
             j=i;
             break;
@@ -210,7 +307,7 @@ int usuniecieAdresata(vector<Adresat> &adresaci, int ID_znalezionegoAdresata)
         adresaci.erase(adresaci.begin()+j);
         cout<<"Adresat usuniety."<<endl;
         system("pause");
-        return ID_znalezionegoAdresata;
+        return znalezione_idAdresata;
     }
     else if (wybor=='N'||wybor=='n')
     {
@@ -226,8 +323,7 @@ int usuniecieAdresata(vector<Adresat> &adresaci, int ID_znalezionegoAdresata)
     }
 }
 
-
-void edycjaAdresata(vector<Adresat> &adresaci, int ID_znalezionegoAdresata)
+void edycjaAdresata(vector<Adresat> &adresaci, int znalezione_idAdresata)
 {
     string imie, nazwisko, adres, email, telefon;
     int i=0;
@@ -236,7 +332,7 @@ void edycjaAdresata(vector<Adresat> &adresaci, int ID_znalezionegoAdresata)
 
     while(i<adresaci.size())
     {
-        if (adresaci[i].ID==ID_znalezionegoAdresata)
+        if (adresaci[i].idAdresata==znalezione_idAdresata)
         {
             j=i;
             break;
@@ -311,12 +407,12 @@ void edycjaAdresata(vector<Adresat> &adresaci, int ID_znalezionegoAdresata)
     }
 }
 
-int odczytPliku(vector<Adresat> &adresaci,  int &rekord)
+int odczytPlikuAdresaci(vector<Adresat> &adresaci,  int &rekord)
 {
     fstream plik;
     string linia, slowoTemp;
     vector<string> temp;
-    plik.open("ksiazka_adresowa_z_danymi.txt", ios::in);
+    plik.open("Adresaci.txt", ios::in);
     if(plik.good())
     {
         while(getline(plik,linia))
@@ -327,22 +423,18 @@ int odczytPliku(vector<Adresat> &adresaci,  int &rekord)
                 temp.push_back(slowoTemp);
         }
     }
-    else
-    {
-        cout<<"Nie mozna pobrac danych z pliku z adresami."<<endl;
-        system("pause");
-    }
     plik.close();
 
     Adresat osoba;
-    for(int i=0; i<temp.size(); i=i+6)
+    for(int i=0; i<temp.size(); i=i+7)
     {
-        osoba.ID=atoi(temp[i].c_str());
-        osoba.imie=temp[i+1];
-        osoba.nazwisko=temp[i+2];
-        osoba.adres=temp[i+3];
-        osoba.email=temp[i+4];
-        osoba.telefon=temp[i+5];
+        osoba.idAdresata=atoi(temp[i].c_str());
+        osoba.idUzytkownika=atoi(temp[i+1].c_str());
+        osoba.imie=temp[i+2];
+        osoba.nazwisko=temp[i+3];
+        osoba.adres=temp[i+4];
+        osoba.email=temp[i+5];
+        osoba.telefon=temp[i+6];
         adresaci.push_back(osoba);
         rekord=atoi(temp[i].c_str());
     }
@@ -350,17 +442,17 @@ int odczytPliku(vector<Adresat> &adresaci,  int &rekord)
     return rekord;
 }
 
-
-void zapisPliku(vector<Adresat> &adresaci)
+void zapisPlikuAdresaci(vector<Adresat> adresaci)
 {
     fstream plik;
-    plik.open("ksiazka_adresowa_z_danymi.txt", ios::out);
+    plik.open("Adresaci.txt", ios::out);
     if (plik.good())
     {
         int i=0;
         while(i<adresaci.size())
         {
-            plik<<adresaci[i].ID<<'|';
+            plik<<adresaci[i].idAdresata<<'|';
+            plik<<adresaci[i].idUzytkownika<<'|';
             plik<<adresaci[i].imie<<'|';
             plik<<adresaci[i].nazwisko<<'|';
             plik<<adresaci[i].adres<<'|';
@@ -377,72 +469,177 @@ void zapisPliku(vector<Adresat> &adresaci)
     }
 }
 
+int odczytPlikuUzytkownicy(vector<Uzytkownik> &uzytkownicy, int &iloscUzytkownikow)
+{
+    fstream plik;
+    string linia, slowoTemp;
+    vector<string> temp;
+    plik.open("Uzytkownicy.txt", ios::in);
+    if(plik.good())
+    {
+        while(getline(plik,linia))
+        {
+            istringstream input;
+            input.str(linia);
+            for(slowoTemp; getline(input, slowoTemp,'|');)
+                temp.push_back(slowoTemp);
+        }
+    }
+    plik.close();
+
+    Uzytkownik osoba;
+    for(int i=0; i<temp.size(); i=i+3)
+    {
+        osoba.idUzytkownika=atoi(temp[i].c_str());
+        osoba.nazwa=temp[i+1];;
+        osoba.haslo=temp[i+2];
+        uzytkownicy.push_back(osoba);
+        iloscUzytkownikow=atoi(temp[i].c_str());
+    }
+    temp.clear();
+    return iloscUzytkownikow;
+}
+
+void zapisPlikuUzytkownicy(vector<Uzytkownik> uzytkownicy)
+{
+    fstream plik;
+    plik.open("Uzytkownicy.txt", ios::out);
+    if (plik.good())
+    {
+        int i=0;
+        while(i<uzytkownicy.size())
+        {
+            plik<<uzytkownicy[i].idUzytkownika<<'|';
+            plik<<uzytkownicy[i].nazwa<<'|';
+            plik<<uzytkownicy[i].haslo<<'|'<<endl;
+            i++;
+        }
+        plik.close();
+    }
+    else
+    {
+        cout<<"Nie mozna zapisac danych do pliku z adresami."<<endl;
+        system("pause");
+    }
+}
+
+char wyswietlenieMenuLogowania(char &wybor)
+{
+    system("cls");
+    cout<<"KSIAZKA ADRESOWA"<<endl;
+    cout<<"1.Rejestracja uzytkownika"<<endl;
+    cout<<"2.Logowanie uzytkownika"<<endl;
+    cout<<"9.Zakoncz program"<<endl;
+    cin>>wybor;
+    return wybor;
+}
+
+char wyswietlenieMenuKsiazkiAdresowej(char &wybor)
+{
+    system("cls");
+    cout<<"KSIAZKA ADRESOWA"<<endl;
+    cout<<"1.Dodaj adresata"<<endl;
+    cout<<"2.Wyszukaj po imieniu"<<endl;
+    cout<<"3.Wyszukaj po nazwisku"<<endl;
+    cout<<"4.Wyswietl wszystkich adresatow"<<endl;
+    cout<<"5.Usun adresata"<<endl;
+    cout<<"6.Edytuj adresata"<<endl;
+    cout<<"---"<<endl;
+    cout<<"7.Zmiana hasla uzytkownika"<<endl;
+    cout<<"8.Wylogowanie uzytkownika"<<endl;
+    cout<<"---"<<endl;
+    cout<<"Twoj wybor:";
+    cin>>wybor;
+    return wybor;
+}
+
 int main()
 {
+    vector<Uzytkownik> uzytkownicy;
+    int idZalogowanegoUzytkownika=0;
+    int iloscUzytkownikow = 0;
+
     vector<Adresat> adresaci;
-    int ID_znalezionegoAdresata=0;
+    int znalezione_idAdresata=0;
     int rekord=0;
     char wybor;
 
-    odczytPliku(adresaci, rekord);
+    odczytPlikuUzytkownicy(uzytkownicy, iloscUzytkownikow);
+    odczytPlikuAdresaci(adresaci, rekord);
 
     while(true)
     {
-        system("cls");
-        cout<<"KSIAZKA ADRESOWA"<<endl;
-        cout<<"1.Dodaj adresata"<<endl;
-        cout<<"2.Wyszukaj po imieniu"<<endl;
-        cout<<"3.Wyszukaj po nazwisku"<<endl;
-        cout<<"4.Wyswietl wszystkich adresatow"<<endl;
-        cout<<"5.Usun adresata"<<endl;
-        cout<<"6.Edytuj adresata"<<endl;
-        cout<<"9.Zakoncz program"<<endl;
-        cout<<"Twoj wybor:";
-        cin>>wybor;
+        if (idZalogowanegoUzytkownika==0)
+        {
+            wyswietlenieMenuLogowania(wybor);
 
-        if (wybor=='1')
-        {
-            rekord=zapisanie(adresaci, rekord);
-            zapisPliku(adresaci);
-        }
-        else if (wybor=='2')
-        {
-            wyszukaniePoImieniu(adresaci);
-        }
-        else if (wybor=='3')
-        {
-            wyszukaniePoNazwisku(adresaci);
-        }
-        else if (wybor=='4')
-        {
-            wyswietlenieWszystkichAdresatow(adresaci);
-        }
-        else if (wybor=='5')
-        {
-            ID_znalezionegoAdresata=wyszukaniePoID(adresaci);
-            if (ID_znalezionegoAdresata!=0)
+            if (wybor=='1')
             {
-                ID_znalezionegoAdresata=usuniecieAdresata(adresaci, ID_znalezionegoAdresata);
-                zapisPliku(adresaci);
+                iloscUzytkownikow=rejestracja(uzytkownicy, iloscUzytkownikow);
+                zapisPlikuUzytkownicy(uzytkownicy);
             }
-        }
-        else if (wybor=='6')
-        {
-            ID_znalezionegoAdresata=wyszukaniePoID(adresaci);
-            if (ID_znalezionegoAdresata!=0)
+            else if (wybor=='2')
             {
-                edycjaAdresata(adresaci, ID_znalezionegoAdresata);
-                zapisPliku(adresaci);
+                idZalogowanegoUzytkownika=logowanie(uzytkownicy);
             }
-        }
-        else if(wybor=='9')
-        {
-            exit(0);
+            else if(wybor=='9')
+            {
+                exit(0);
+            }
         }
         else
         {
-            cout<<"Nie ma takiej opcji w menu."<<endl;
-            system("pause");
+            wyswietlenieMenuKsiazkiAdresowej(wybor);
+
+            if (wybor=='1')
+            {
+                rekord=zapisanieAdresata(adresaci, rekord, idZalogowanegoUzytkownika);
+                zapisPlikuAdresaci(adresaci);
+            }
+            else if (wybor=='2')
+            {
+                wyszukanieAdresataPoImieniu(adresaci, idZalogowanegoUzytkownika);
+            }
+            else if (wybor=='3')
+            {
+                wyszukanieAdresataPoNazwisku(adresaci, idZalogowanegoUzytkownika);
+            }
+            else if (wybor=='4')
+            {
+                wyswietlenieWszystkichAdresatow(adresaci, idZalogowanegoUzytkownika);
+            }
+            else if (wybor=='5')
+            {
+                znalezione_idAdresata=wyszukanieAdresataPo_idAdresata(adresaci, idZalogowanegoUzytkownika);
+                if (znalezione_idAdresata!=0)
+                {
+                    znalezione_idAdresata=usuniecieAdresata(adresaci, znalezione_idAdresata);
+                    zapisPlikuAdresaci(adresaci);
+                }
+            }
+            else if (wybor=='6')
+            {
+                znalezione_idAdresata=wyszukanieAdresataPo_idAdresata(adresaci, idZalogowanegoUzytkownika);
+                if (znalezione_idAdresata!=0)
+                {
+                    edycjaAdresata(adresaci, znalezione_idAdresata);
+                    zapisPlikuAdresaci(adresaci);
+                }
+            }
+            else if(wybor=='7')
+            {
+                zmianaHasla(uzytkownicy, idZalogowanegoUzytkownika);
+                zapisPlikuUzytkownicy(uzytkownicy);
+            }
+            else if(wybor=='8')
+            {
+                idZalogowanegoUzytkownika=0;
+            }
+            else
+            {
+                cout<<"Nie ma takiej opcji w menu."<<endl;
+                system("pause");
+            }
         }
     }
     return 0;
