@@ -3,105 +3,15 @@
 #include <windows.h>
 #include <fstream>
 #include <sstream>
+#include "Uzytkownik.h"
 
 using namespace std;
-
-struct Uzytkownik
-{
-    int idUzytkownika;
-    string nazwa, haslo;
-};
 
 struct Adresat
 {
     int idAdresata, idUzytkownika;
     string imie, nazwisko, adres, email, telefon;
 };
-
-int rejestracjaUzytkownika(vector<Uzytkownik> &uzytkownicy, int iloscUzytkownikow)
-{
-    string nazwa, haslo;
-    Uzytkownik osoba;
-    int i=0;
-
-    system("cls");
-    cout<<"KSIAZKA ADRESOWA"<<endl;
-    cout<<"0 - powrot do menu glownego"<<endl;
-    cout<<"Podaj nazwe nowego uzytkownika:"<<endl;
-    cin>>nazwa;
-
-    if (nazwa=="0")
-    {
-        return 0;
-    }
-
-    while (i<iloscUzytkownikow)
-    {
-        if (uzytkownicy[i].nazwa==nazwa)
-        {
-            cout<<"Taka nazwa uzytkownika juz istnieje. Wpisz inna nazwe."<<endl;
-            cin>>nazwa;
-            i=0;
-        }
-        else
-        {
-            i++;
-        }
-    }
-
-    cout<<"Podaj haslo uzytkownika:"<<endl;
-    cin>>haslo;
-    iloscUzytkownikow+=1;
-    osoba.idUzytkownika=iloscUzytkownikow;
-    osoba.nazwa=nazwa;
-    osoba.haslo=haslo;
-    uzytkownicy.push_back(osoba);
-    cout<<"Konto zalozone."<<endl;
-    system("pause");
-    return iloscUzytkownikow;
-}
-
-int logowanieUzytkownika(vector<Uzytkownik> uzytkownicy)
-{
-    string nazwa, haslo;
-
-    system("cls");
-    cout<<"KSIAZKA ADRESOWA"<<endl;
-    cout<<"0 - powrot do menu glownego"<<endl;
-    cout<<"Podaj nazwe:"<<endl;
-    cin>>nazwa;
-
-    if (nazwa=="0")
-    {
-        return 0;
-    }
-
-    int i=0;
-    while (i<uzytkownicy.size())
-    {
-        if (uzytkownicy[i].nazwa==nazwa)
-        {
-            for (int proby=0; proby<3; proby++)
-            {
-                cout<<"Podaj haslo."<<endl<<"Pozostalo "<<3-proby<<" proby."<<endl;
-                cin>>haslo;
-                if (uzytkownicy[i].haslo==haslo)
-                {
-                    cout<<"Zalogowales sie.";
-                    Sleep(1000);
-                    return uzytkownicy[i].idUzytkownika;
-                }
-            }
-            cout<<"Podales bledne haslo 3 razy. Poczekaj trzy sekundy."<<endl;
-            Sleep(3000);
-            return 0;
-        }
-        i++;
-    }
-    cout<<"Nie ma uzytkownika o takiej nazwie."<<endl;
-    Sleep(1000);
-    return 0;
-}
 
 int zmianaHaslaUzytkownika(vector<Uzytkownik> &uzytkownicy, int idZalogowanegoUzytkownika)
 {
@@ -576,9 +486,20 @@ void dodanieAdresataDoPliku(vector<Adresat> adresaci)
     }
     else
     {
-        cout<<"Nie mozna zapisac danych do pliku z adresami."<<endl;
-        system("pause");
+        plikTymczasowy<<adresaci[i].idAdresata<<'|';
+        plikTymczasowy<<adresaci[i].idUzytkownika<<'|';
+        plikTymczasowy<<adresaci[i].imie<<'|';
+        plikTymczasowy<<adresaci[i].nazwisko<<'|';
+        plikTymczasowy<<adresaci[i].adres<<'|';
+        plikTymczasowy<<adresaci[i].email<<'|';
+        plikTymczasowy<<adresaci[i].telefon<<'|'<<endl;
+
+        plik.close();
+        plikTymczasowy.close();
+        zmienNazwePliku("Adresaci_tymczasowy.txt", "Adresaci.txt");
     }
+
+
 }
 
 void zapisPlikuAdresaciPoUsunieciuAdresata(int znalezione_idAdresata, vector<Adresat> &adresaci)
@@ -773,31 +694,29 @@ char wyswietlenieMenuKsiazkiAdresowej(char &wybor)
 
 int main()
 {
-    vector<Uzytkownik> uzytkownicy;
-    int idZalogowanegoUzytkownika=0;
-    int idOstatniegoAdresata=0;
-    int iloscUzytkownikow=0;
+    Uzytkownik user;
 
     vector<Adresat> adresaci;
     int znalezione_idAdresata=0;
+    int idOstatniegoAdresata=0;
     char wybor;
 
-    odczytPlikuUzytkownicy(uzytkownicy, iloscUzytkownikow);
+    odczytPlikuUzytkownicy(user.uzytkownicy, user.iloscUzytkownikow);
 
     while(true)
     {
-        if (idZalogowanegoUzytkownika==0)
+        if (user.idZalogowanegoUzytkownika==0)
         {
             wyswietlenieMenuLogowania(wybor);
 
             if (wybor=='1')
             {
-                iloscUzytkownikow=rejestracjaUzytkownika(uzytkownicy, iloscUzytkownikow);
-                zapisPlikuUzytkownicy(uzytkownicy);
+                user.iloscUzytkownikow=user.rejestracjaUzytkownika(user.uzytkownicy, user.iloscUzytkownikow);
+                zapisPlikuUzytkownicy(user.uzytkownicy);
             }
             else if (wybor=='2')
             {
-                idZalogowanegoUzytkownika=logowanieUzytkownika(uzytkownicy);
+                user.idZalogowanegoUzytkownika=user.logowanieUzytkownika(user.uzytkownicy);
             }
             else if(wybor=='9')
             {
@@ -808,14 +727,14 @@ int main()
         {
             if (adresaci.empty() == true)
             {
-                idOstatniegoAdresata = odczytPlikuAdresaci(adresaci, idZalogowanegoUzytkownika);
+                idOstatniegoAdresata = odczytPlikuAdresaci(adresaci, user.idZalogowanegoUzytkownika);
             }
 
             wyswietlenieMenuKsiazkiAdresowej(wybor);
 
             if (wybor=='1')
             {
-                idOstatniegoAdresata=zapisanieAdresata(adresaci, idOstatniegoAdresata, idZalogowanegoUzytkownika);
+                idOstatniegoAdresata=zapisanieAdresata(adresaci, idOstatniegoAdresata, user.idZalogowanegoUzytkownika);
                 dodanieAdresataDoPliku(adresaci);
             }
             else if (wybor=='2')
@@ -832,7 +751,7 @@ int main()
             }
             else if (wybor=='5')
             {
-                znalezione_idAdresata=wyszukanieAdresataPo_idAdresata(adresaci, idZalogowanegoUzytkownika);
+                znalezione_idAdresata=wyszukanieAdresataPo_idAdresata(adresaci, user.idZalogowanegoUzytkownika);
                 if (znalezione_idAdresata!=0)
                 {
                     znalezione_idAdresata=usuniecieAdresata(adresaci, znalezione_idAdresata);
@@ -841,7 +760,7 @@ int main()
             }
             else if (wybor=='6')
             {
-                znalezione_idAdresata=wyszukanieAdresataPo_idAdresata(adresaci, idZalogowanegoUzytkownika);
+                znalezione_idAdresata=wyszukanieAdresataPo_idAdresata(adresaci, user.idZalogowanegoUzytkownika);
                 if (znalezione_idAdresata!=0)
                 {
                     edycjaAdresata(adresaci, znalezione_idAdresata);
@@ -850,12 +769,12 @@ int main()
             }
             else if(wybor=='7')
             {
-                zmianaHaslaUzytkownika(uzytkownicy, idZalogowanegoUzytkownika);
-                zapisPlikuUzytkownicy(uzytkownicy);
+                zmianaHaslaUzytkownika(user.uzytkownicy, user.idZalogowanegoUzytkownika);
+                zapisPlikuUzytkownicy(user.uzytkownicy);
             }
             else if(wybor=='8')
             {
-                idZalogowanegoUzytkownika=0;
+                user.idZalogowanegoUzytkownika=0;
                 adresaci.clear();
             }
             else
